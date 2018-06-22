@@ -243,7 +243,7 @@ function makeGraphs(recordsJson) {
 			//add
 			var markers = [];
 			allDim.top(Infinity).forEach(function (d) {
-				markers.push(L.circleMarker([d["geometry"]["y"], d["geometry"]["x"]],{radius: 0.1}));
+				markers.push(L.circleMarker([d.geometry.coordinates[1], d.geometry.coordinates[0]],{radius: 0.1}));
 				
 			});
 			pointLyr = L.featureGroup(markers).addTo(mymap);
