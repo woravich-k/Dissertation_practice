@@ -39,7 +39,7 @@ function resetHighlight(e) {
 		
 	};
 }
-function zoomToFeature(e) {
+function selectFeature(e) {
 	// e.target.feature.properties.selected = !e.target.feature.properties.selected;
 	// if (e.target.feature.properties.selected) {
 		// e.target.setStyle({
@@ -50,7 +50,8 @@ function zoomToFeature(e) {
 			// fillColor: '#666'
 		// });
 	// }
-	boroughChart.filter(e.target.feature.properties.BOROUGH);
+	
+	boroughChart.filter(e.target.feature.properties["borough"]);
 	dc.redrawAll();
 	
     // mymap.fitBounds(e.target.getBounds());
@@ -59,7 +60,7 @@ function onEachFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
-        click: zoomToFeature
+        click: selectFeature
     });
 }
 
@@ -117,9 +118,14 @@ function loadGraph(){
 function graphResponse(){
 //this function listens out for the server to say that the data is ready - i.e. has state 4
 	if (client.readyState == 4){
+		// if (client.status == 400){
+			// loadGraph();
+			// return;
+		// }
 		//once the data is ready, process the data
 		var geoJSONData = client.responseText;
 		geoJSONData = JSON.parse(geoJSONData);
+		// console.log(geoJSONData)
 		
 		
 		makeGraphs(geoJSONData);
@@ -128,35 +134,35 @@ function graphResponse(){
 
 var boroughChart;
 function makeGraphs(recordsJson) {
-	var records = recordsJson.features;
+	var records = recordsJson[0].features;
 	console.log(records)
 	// var dateFormat = d3.time.format("%d/%m/%Y");
 	var parseTime = d3.timeParse("%d/%m/%Y");
 	records.forEach(function(d) {
-		// d["attributes"]["date"] = dateFormat.parse(d["attributes"]["date"]);
-		d["attributes"]["date"] = parseTime(d["attributes"]["date"]);
+		// d.properties["date"] = dateFormat.parse(d.properties["date"]);
+		d.properties["date"] = parseTime(d.properties["date"]);
 	});
 	
 	
 	// data dimension _ crossfilter
 	var ndx = crossfilter(records);
-	var dateDim = ndx.dimension(function(d) { return d["attributes"]["date"]; });
-	var boroughDim = ndx.dimension(function(d) { return d["attributes"]["BOROUGH"]; });
-	var boroughDim2 = ndx.dimension(function(d) { return d["attributes"]["BOROUGH"]; });
-	var typeDim = ndx.dimension(function(d) { return d["attributes"]["Type"]; });
+	var dateDim = ndx.dimension(function(d) { return d.properties["date"]; });
+	var boroughDim = ndx.dimension(function(d) { return d.properties["BOROUGH"]; });
+	var boroughDim2 = ndx.dimension(function(d) { return d.properties["BOROUGH"]; });
+	var typeDim = ndx.dimension(function(d) { return d.properties["Type"]; });
 	var allDim = ndx.dimension(function(d) {return d;});
 	
 	//group
 	var dateGroup = dateDim.group();
 	var boroughGroup = boroughDim.group();
-	var boroughGroupPrice = boroughDim2.group().reduceSum(function(d){return d["attributes"]["Price"]});
+	var boroughGroupPrice = boroughDim2.group().reduceSum(function(d){return d.properties["Price"]});
 	var typeGroup = typeDim.group();
 	var all = ndx.groupAll();
-	var all_price = ndx.groupAll().reduceSum(function(d){return d["attributes"]["Price"]});
+	var all_price = ndx.groupAll().reduceSum(function(d){return d.properties["Price"]});
 	
 	// first and last timestamps
-	var minDate = dateDim.bottom(1)[0]["attributes"]["date"];
-	var maxDate = dateDim.top(1)[0]["attributes"]["date"];
+	var minDate = dateDim.bottom(1)[0].properties["date"];
+	var maxDate = dateDim.top(1)[0].properties["date"];
 	
 	
 	// define charts
@@ -265,7 +271,7 @@ function makeGraphs(recordsJson) {
 								fillColor: '#666'
 							}
 						}
-					} else if (feature.properties.BOROUGH == filter){
+					} else if (feature.properties["borough"] == filter){
 						feature.properties.selected = !feature.properties.selected;
 						if (feature.properties.selected){
 							
