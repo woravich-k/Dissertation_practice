@@ -66,7 +66,7 @@ function onEachFeature(feature, layer) {
 	
 //load borough
 function loadBorough(){
-	var url = './data/borough.json';
+	var url = 'http://woravich-k:4480/getGeoJSON/borough/geom';
 	client_borough = new XMLHttpRequest();
 	
 	client_borough.open('GET', url);
@@ -104,7 +104,7 @@ function addBorough(geoJSONData) {
 
 // load graph
 function loadGraph(){
-	var url = './data/London_price_pp.json';
+	var url = 'http://woravich-k:4480/getGeoJSON/London_price_pp/geom';
 	client = new XMLHttpRequest();
 	
 	client.open('GET', url);

@@ -110,7 +110,7 @@ app.get('/getGeoJSON/:tablename/:geomcolumn',function(req,res){
 		
 		//first get a list of the columns that are in the table
 		//use string agg to generate a comma separated list that can then be pasted into the next query
-		var querystring = "select string_agg(colname,',') from (select column_name as colname ";
+		var querystring = "select string_agg(colname,'\",\"') from (select column_name as colname ";
 		querystring = querystring + " FROM information_schema.columns as colname ";
 		querystring = querystring + " where table_name ='" + req.params.tablename + "'";
 		querystring = querystring + " and column_name <>'" + req.params.geomcolumn +"') as cols ";
@@ -131,8 +131,8 @@ app.get('/getGeoJSON/:tablename/:geomcolumn',function(req,res){
 				console.log(result.rows[i].string_agg);
 			}
 			thecolnames = result.rows[0].string_agg;
-			colnames = thecolnames;
-			console.log("the colnames "+thecolnames);
+			colnames = '\"'+thecolnames+'\"';
+			console.log("the colnames "+colnames);
 			//now use the inbuilt geoJSON functionality and create the required geoJSON format using  a query adapted from here:
 			//http://www.postgresonline.com/journal/archives/267-Creating-GeoJSON-Feature-Collections-with-JSON-and-PostGIS-functions.html
 			//note that query needs  to be a single string with no line breaks so built it upp bit by bit
@@ -140,7 +140,7 @@ app.get('/getGeoJSON/:tablename/:geomcolumn',function(req,res){
 			var querystring = "select 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM ";
 			querystring = querystring + "(select 'Feature' As type, ST_AsGeoJSON(lg." + req.params.geomcolumn + ")::json As geometry, ";
 			querystring = querystring + "row_to_json((select l from (select "+colnames+ ") As l )) as properties";
-			querystring =querystring + " from " + req.params.tablename + " as lg order by lg.id) as f  ";
+			querystring =querystring + " from \"" + req.params.tablename + "\" as lg order by lg.id) as f  ";
 			console.log(querystring);
 			//run the second query
 			client.query(querystring,function(err,result){
